@@ -1,16 +1,3 @@
-/*
- * Create a list that holds all of your cards
- */
-
-
-/*
- * Display the cards on the page
- *   - shuffle the list of cards using the provided "shuffle" method below
- *   - loop through each card and create its HTML
- *   - add each card's HTML to the page
- */
-
-// Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -26,22 +13,12 @@ function shuffle(array) {
 }
 
 
-/*
- * set up the event listener for a card. If a card is clicked:
- *  - display the card's symbol (put this functionality in another function that you call from this one)
- *  - add the card to a *list* of "open" cards (put this functionality in another function that you call from this one)
- *  - if the list already has another card, check to see if the two cards match
- *    + if the cards do match, lock the cards in the open position (put this functionality in another function that you call from this one)
- *    + if the cards do not match, remove the cards from the list and hide the card's symbol (put this functionality in another function that you call from this one)
- *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
- *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
- */
-
 let openCards = []; 
 let moves = 0;
 let clockOff = true;
 let time = 0;
 let matched = 0;
+let clockId; 
 const cards = document.querySelectorAll('.deck');
 const TOTAL_PAIRS = 8;
 
@@ -69,21 +46,21 @@ cards.forEach(function(element) {
 	element.addEventListener("click", function(event) {
 		const clickTarget = event.target;
 
-				if (validClick(clickTarget)) {
-		if(clockOff) {
-			startClock();
-			clockOff = false;
-		}
+		if (validClick(clickTarget)) {
+			if(clockOff) {
+				startClock();
+				clockOff = false;
+			}
 		}
 
 		if (validClick(clickTarget)) {
 			toggleCard(clickTarget);
 			addToggleCard(clickTarget);
 
-			if (openCards.length === 2) {
-			matchCheck(clickTarget);
-			addMove();
-			checkScore();
+		if (openCards.length === 2) {
+		matchCheck(clickTarget);
+		addMove();
+		checkScore();
 					}
 		};
 	});
@@ -91,17 +68,19 @@ cards.forEach(function(element) {
 
 // evt listener for modal buttons 
 
-document.querySelector('.modal_cancel').addEventListener('click', () => {
+/*document.querySelector('.modal_cancel').addEventListener('click', () => {
 	toggleModal();
 });
 
 document.querySelector('.modal_replay').addEventListener('click', () => {
-	console.log('replay', resetGame); // call reset here
+	console.log('replay', resetGame()); // call reset here
 });
 
-if (matched === TOTAL_PAIRS) {
-	gameOver();
-}
+document.querySelector(".restart").addEventListener("click", () => {
+  resetGame();
+  console.log('clicked');
+  });
+*/
 
 function validClick(clickTarget) { 
 	return (
@@ -135,7 +114,12 @@ function matchCheck () {
 		openCards[1].classList.toggle('match');
 		openCards = [];
 		matched++;
+		if (matched === TOTAL_PAIRS) {
+		gameOver();
+		}
 	}
+
+
 	else { 
 		setTimeout ( function (){
 		toggleCard(openCards[0]);
@@ -147,6 +131,10 @@ function matchCheck () {
 
 
 
+
+
+// scoring 
+
 function checkScore () { 
 	if (moves === 16 || moves === 24 ) {
 		hideStar();
@@ -154,6 +142,18 @@ function checkScore () {
 
 }
 
+
+function getStars() {
+	stars = document.querySelectorAll('.stars li');
+	starCount = 0;
+	for (star of stars) {
+		if (star.style.display !== 'none') {
+			starCount++;
+		}
+	}
+	console.log(starCount);
+	return starCount;
+}
 
 function hideStar () { 
 	const starList = document.querySelectorAll('.stars li');
@@ -165,11 +165,17 @@ function hideStar () {
 	}
 }
 
+// clock functions 
 
-
+function startClock () {
+	clearclockId = setInterval(() => {
+		time++;
+		displayTime();
+	}, 1000);
+}
 
 function displayTime() {
-	const clock = document.querySelector('.clock');
+	const clock = document.querySelector(".clock");
 	const minutes = Math.floor(time / 60);
 	const seconds = time % 60;
 	if (seconds < 10) {
@@ -181,21 +187,20 @@ function displayTime() {
 	console.log(clock);	 
 }
 
-function startClock () {
-	let clockId = setInterval(() => {
-		time++;
-		console.log(time);
-		displayTime();
-	}, 1000);
+
+function stopClock() {
+	clearInterval(clockId);
+	clockOff = true;
 }
+
+
+// modal functions 
 
 function toggleModal() {
 	const modal = document.querySelector('.modal_background');
 	modal.classList.toggle('hide');
 }
 
-toggleModal() // open modal 
-toggleModal() // close modal 
 
 function writeModalStats() {
 	const timeStat = document.querySelector('.modal_time');
@@ -210,6 +215,8 @@ function writeModalStats() {
 	starsStat.innerHTML = `Stars = ${stars}`;
 }
 
+
+
 function getStars() {
 	stars = document.querySelectorAll('.stars li');
 	starCount = 0;
@@ -222,12 +229,24 @@ function getStars() {
 	return starCount;
 }
 
-function resetGame() {
-	resetClockAndTime();
-	resetMoves();
-	resetStars();
-	deckShuffle();
+// evt listener for modal buttons 
+
+document.querySelector('.modal_close').addEventListener('click', toggleModal);
+
+document.querySelector('.modal_replay').addEventListener('click', modalReplay);
+
+document.querySelector(".restart").addEventListener("click", resetGame);
+
+
+
+function modalReplay() {
+	mathced = 0;
+	resetGame();
+    toggleModal();
+    resetCards();
+    resetStars();
 }
+
 
 function resetClockAndTime() {
 	stopClock();
@@ -248,6 +267,23 @@ function resetStars() {
 		star.style.display = 'inline';
 	}
 }
+
+function resetCards() {
+	const cardz = document.querySelectorAll('.deck li');
+	for (let card of cardz) {
+		card.classList = 'card';
+	}
+}
+
+
+function resetGame() {
+	resetClockAndTime();
+	resetMoves();
+	resetStars();
+	deckShuffle();
+	resetCards();
+}
+
 
 function gameOver() {
 	stopClock();

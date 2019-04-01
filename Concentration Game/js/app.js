@@ -168,7 +168,7 @@ function hideStar () {
 // clock functions 
 
 function startClock () {
-	clearclockId = setInterval(() => {
+		clockId = setInterval(() => {
 		time++;
 		displayTime();
 	}, 1000);
@@ -244,8 +244,8 @@ function modalReplay() {
 	resetGame();
     toggleModal();
     resetCards();
-    resetStars();
-}
+    resetStars();q
+};
 
 
 function resetClockAndTime() {
@@ -253,12 +253,12 @@ function resetClockAndTime() {
 	clockOff = true;
 	time = 0;
 	displayTime();
-}
+};
 
 function resetMoves() {
 	moves = 0;
 	document.querySelector('.moves').innerHTML = moves;
-}
+};
 
 function resetStars() {
 	stars = 0;
@@ -266,27 +266,29 @@ function resetStars() {
 	for (star of starList) {
 		star.style.display = 'inline';
 	}
-}
+};
 
 function resetCards() {
 	const cardz = document.querySelectorAll('.deck li');
-	for (let card of cardz) {
+		for (let card of cardz) {
 		card.classList = 'card';
 	}
-}
+};
 
 
 function resetGame() {
+	openCards = [];
+	matched = 0;
 	resetClockAndTime();
 	resetMoves();
 	resetStars();
 	deckShuffle();
 	resetCards();
-}
+};
 
 
 function gameOver() {
 	stopClock();
 	writeModalStats();
 	toggleModal();
-}
+};
